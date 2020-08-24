@@ -7,10 +7,14 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 set (CMAKE_CXX_STANDARD 11)
-find_package(OpenCV REQUIRED)
 
-include_directories(${OPENCV_INCLUDE_DIRS})
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
+
+conan_basic_setup(TARGETS)
+
+#find_package(OpenCV REQUIRED)
+#include_directories(${OPENCV_INCLUDE_DIRS})
+#include_directories(${PROJECT_SOURCE_DIR}/include)
 
 
 set(generate_marker_src
@@ -18,7 +22,7 @@ set(generate_marker_src
    )
 add_executable(generate_marker ${generate_marker_src})
 target_link_libraries(generate_marker 
-    ${OpenCV_LIBRARIES}
+    PRIVATE CONAN_PKG::opencv
     )
 
 target_compile_options(generate_marker
@@ -31,7 +35,7 @@ set(generate_board_src
    )
 add_executable(generate_board ${generate_board_src})
 target_link_libraries(generate_board 
-    ${OpenCV_LIBRARIES}
+    PRIVATE CONAN_PKG::opencv
     )
 
 target_compile_options(generate_board

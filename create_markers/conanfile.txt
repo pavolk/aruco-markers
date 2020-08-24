@@ -1,0 +1,13 @@
+[requires]
+opencv/4.3.0@conan/stable
+bzip2/1.0.8@conan/stable
+
+[generators]
+cmake
+
+[options]
+opencv:contrib=True
+opencv:freetype=False
+opencv:glog=False
+opencv:gflags=False
+
