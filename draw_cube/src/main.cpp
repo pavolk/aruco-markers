@@ -127,10 +127,13 @@ int main(int argc, char **argv)
     int frame_width = in_video.get(cv::CAP_PROP_FRAME_WIDTH);
     int frame_height = in_video.get(cv::CAP_PROP_FRAME_HEIGHT);
     int fps = 30;
+
+#if WRITE_VIDEO_OUT
     cv::VideoWriter video(
-        "out.avi", CV_FOURCC('M', 'J', 'P', 'G'), fps,
+        "out.avi", cv::CAP_PROP_FOURCC, fps,
         cv::Size(frame_width, frame_height), true
     );
+#endif
 
     while (in_video.grab())
     {
@@ -186,8 +189,9 @@ int main(int argc, char **argv)
                             cv::Scalar(0, 252, 124), 1, cv::LINE_AA);
             }
         }
-
+#if WRITE_VIDEO_OUT
         video.write(image_copy);
+#endif
         cv::imshow("Pose estimation", image_copy);
         char key = (char)cv::waitKey(wait_time);
         if (key == 27)
