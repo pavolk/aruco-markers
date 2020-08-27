@@ -114,7 +114,7 @@ int main(int argc, char **argv)
         cv::aruco::getPredefinedDictionary( \
         cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
 
-    cv::FileStorage fs("../../calibration_params.yml", cv::FileStorage::READ);
+    cv::FileStorage fs("calibration_params.yml", cv::FileStorage::READ);
 
     fs["camera_matrix"] >> camera_matrix;
     fs["distortion_coefficients"] >> dist_coeffs;
