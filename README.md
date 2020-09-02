@@ -8,15 +8,66 @@ This repository includes codes that can be used to work with the augmented reali
 A few programs in the repository, including the codes to create the markers and to calibrate the cameras, are copies of the examples included with the OpenCV libraries with minor changes, which are added so that everything is in one place.
 
 ## Contents
-1. [Installing OpenCV](#installing-opencv)
-    1. [Installing v3.4.2 (recommended)](#installing-v342-recommended)
-    2. [Installing the Latest](#installing-the-latest)
+
+1. [Installation on Windows](#original-installation-procedure)
+2. [Original installation procedure](#original-installation-procedure)
+    1. [Installing OpenCV](#installing-opencv)
+      1. [Installing v3.4.2 (recommended)](#installing-v342-recommended)
+      2. [Installing the Latest](#installing-the-latest)
 2. [Generating Markers](#generating-markers)
 3. [Detecting the Markers](#detecting-the-markers)
 4. [Camera Calibration](#camera-calibration)
 5. [Pose Estimation](#pose-estimation)
 6. [Draw a Cube](#draw-a-cube)
 
+
+## Installation on Windows
+
+Folowing paragraphs describe the build procedure for Windows hosts.
+
+### Required tools
+
+This procedure requires [Microsoft Visual Studio](https://visualstudio.microsoft.com/de/vs/community/) installation, [conan](https://conan.io/) for dependency management and [CMake](https://cmake.org/).
+
+All tools can be easily and installed using [Chocolatey](https://chocolatey.org/) package manager for Windows e.g. like this
+
+```
+choco install visualstudio2019community
+choco install conan
+choco install cmake
+```
+
+### Setting-up conan
+
+1. Add a bincrafters repository to conan remotes.
+
+  ```
+  conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+  ```
+
+2. List conan repositories
+
+  ```
+  conan remote list
+  conan-center: https://conan.bintray.com [Verify SSL: True]
+  bincrafters: https://api.bintray.com/conan/bincrafters/public-conan [Verify SSL: True]
+
+  ```
+
+### Building from source
+
+```
+mkdir build
+cd build
+conan install -g cmake -s build_type=Debug --build=missing ..
+cmake ..
+cmake --build .
+```
+
+
+## Original installation procedure
+
+Folowing paragraphs describe the original installation procedure for Linux hosts.
 
 ## Installing OpenCV
 
