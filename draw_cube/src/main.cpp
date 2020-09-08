@@ -139,7 +139,12 @@ int main(int argc, char **argv)
     {
 
         in_video.retrieve(image);
-        image.copyTo(image_copy);
+        
+        
+        // image.copyTo(image_copy);
+        image_copy = cv::Mat(image.size(), image.type(), cv::Scalar(0, 0, 0));
+
+
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f>> corners;
         cv::aruco::detectMarkers(image, dictionary, corners, ids);
@@ -147,7 +152,8 @@ int main(int argc, char **argv)
         // if at least one marker detected
         if (ids.size() > 0)
         {
-            cv::aruco::drawDetectedMarkers(image_copy, corners, ids);
+            //cv::aruco::drawDetectedMarkers(image_copy, corners, ids);
+
             std::vector<cv::Vec3d> rvecs, tvecs;
             cv::aruco::estimatePoseSingleMarkers(
                 corners, marker_length_m, camera_matrix, dist_coeffs,
@@ -161,7 +167,7 @@ int main(int argc, char **argv)
                     image_copy, camera_matrix, dist_coeffs, rvecs[i], tvecs[i],
                     marker_length_m
                 );
-
+#if 0
                 // This section is going to print the data for all the detected
                 // markers. If you have more than a single marker, it is 
                 // recommended to change the below section so that either you
@@ -187,12 +193,19 @@ int main(int argc, char **argv)
                 cv::putText(image_copy, vector_to_marker.str(),
                             cv::Point(10, 70), cv::FONT_HERSHEY_SIMPLEX, 0.6,
                             cv::Scalar(0, 252, 124), 1, cv::LINE_AA);
+#endif
             }
         }
 #if WRITE_VIDEO_OUT
         video.write(image_copy);
 #endif
-        cv::imshow("Pose estimation", image_copy);
+        auto window_name = "Pose estimation";
+
+        cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+        cv::moveWindow(window_name, 4480, 0);
+        cv::setWindowProperty(window_name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+
+        cv::imshow(window_name, image_copy);
         char key = (char)cv::waitKey(wait_time);
         if (key == 27)
             break;

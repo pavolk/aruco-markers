@@ -89,7 +89,11 @@ int main(int argc, char **argv)
     while (in_video.grab()) {
         cv::Mat image, image_copy;
         in_video.retrieve(image);
-        image.copyTo(image_copy);
+
+        //image.copyTo(image_copy);
+        image_copy = cv::Mat(image.size(), image.type(), cv::Scalar(0,0,0));
+        
+
         std::vector<int> ids;
         std::vector<std::vector<cv::Point2f>> corners;
         cv::aruco::detectMarkers(image, dictionary, corners, ids);
@@ -98,7 +102,14 @@ int main(int argc, char **argv)
         if (ids.size() > 0)
             cv::aruco::drawDetectedMarkers(image_copy, corners, ids);
 
-        imshow("Detected markers", image_copy);
+        auto window_name = "Detected markers";
+
+        cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+        cv::moveWindow(window_name, 4480, 0);
+        cv::setWindowProperty(window_name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+              
+        imshow(window_name, image_copy);
+
         char key = (char)cv::waitKey(wait_time);
         if (key == 27)
             break;
