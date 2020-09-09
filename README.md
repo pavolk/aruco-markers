@@ -9,7 +9,7 @@ A few programs in the repository, including the codes to create the markers and 
 
 ## Contents
 
-1. [Installation on Windows](#original-installation-procedure)
+1. [Installation on Windows](#installation-on-windows)
 2. [Original installation procedure](#original-installation-procedure)
     1. [Installing OpenCV](#installing-opencv)
       1. [Installing v3.4.2 (recommended)](#installing-v342-recommended)

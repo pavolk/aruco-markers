@@ -18,6 +18,3 @@ add_subdirectory(create_markers)
 add_subdirectory(detect_marker)
 add_subdirectory(pose_estimation)
 add_subdirectory(draw_cube)
-
-add_subdirectory(sandbox)
-
