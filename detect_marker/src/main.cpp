@@ -26,7 +26,6 @@
 #include <iostream>
 #include <cstdlib>
 
-
 namespace {
 const char* about = "Detect ArUco marker images";
 const char* keys  =
@@ -91,9 +90,26 @@ int main(int argc, char **argv)
         in_video.retrieve(image);
         image.copyTo(image_copy);
         std::vector<int> ids;
-        std::vector<std::vector<cv::Point2f>> corners;
+
+        typedef std::vector<cv::Point2f> Corners;
+
+        std::vector<Corners> corners;
         cv::aruco::detectMarkers(image, dictionary, corners, ids);
         
+        std::map<int, Corners> markers;
+        for (unsigned i = 0; i < ids.size(); ++i) {
+            markers[ids[i]] = corners[i];
+        }
+
+        if (markers.find(7) != std::end(markers)) {
+            if (markers.find(5) != std::end(markers)) {
+                cv::line(image_copy, markers[7][1], markers[5][0], cv::Scalar(0, 0, 255), 5);
+            }
+            if (markers.find(4) != std::end(markers)) {
+                cv::line(image_copy, markers[7][1], markers[4][1], cv::Scalar(0, 0, 255), 5);
+            }
+        }
+
         // If at least one marker detected
         if (ids.size() > 0)
             cv::aruco::drawDetectedMarkers(image_copy, corners, ids);
