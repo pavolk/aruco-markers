@@ -39,6 +39,41 @@ const char* keys  =
         ;
 }
 
+
+static cv::Point2f cursor;
+static void onMouse(int event, int x, int y, int, void*);
+
+typedef std::vector<cv::Point2f> Corners;
+typedef std::map<int, Corners> Markers;
+static Markers detectMarkers(cv::InputArray image, const cv::Ptr<cv::aruco::Dictionary>& dictionary)
+{
+    Markers retv;
+
+    std::vector<int> ids;
+    std::vector<Corners> corners;
+    cv::aruco::detectMarkers(image, dictionary, corners, ids);
+    for (unsigned i = 0; i < ids.size(); ++i) {
+        retv[ids[i]] = corners[i];
+    }
+
+    return retv;
+}
+
+static void drawMarkers(cv::InputOutputArray image, const Markers& markers)
+{
+    if (markers.empty()) {
+        return;
+    }
+
+    std::vector<int> ids;
+    std::transform(std::begin(markers), std::end(markers), std::back_inserter(ids), [](const auto& m) { return m.first; });
+
+    std::vector<Corners> corners;
+    std::transform(std::begin(markers), std::end(markers), std::back_inserter(corners), [](const auto& m) { return m.second; });
+
+    cv::aruco::drawDetectedMarkers(image, corners, ids);
+}
+
 int main(int argc, char **argv)
 {
     cv::CommandLineParser parser(argc, argv, keys);
@@ -85,34 +120,43 @@ int main(int argc, char **argv)
         cv::aruco::getPredefinedDictionary( \
         cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
 
+    auto reference_image = cv::imread("master.jpg", cv::IMREAD_COLOR);
+    auto reference_markers = detectMarkers(reference_image, dictionary);
+    drawMarkers(reference_image, reference_markers);
+    imshow("Reference markers", reference_image);
+    cv::setMouseCallback("Reference markers", onMouse, &cursor);
+
+    Corners reference_points({ reference_markers[2][0], reference_markers[4][0], reference_markers[5][0] });
+
     while (in_video.grab()) {
         cv::Mat image, image_copy;
         in_video.retrieve(image);
         image.copyTo(image_copy);
-        std::vector<int> ids;
 
-        typedef std::vector<cv::Point2f> Corners;
-
-        std::vector<Corners> corners;
-        cv::aruco::detectMarkers(image, dictionary, corners, ids);
-        
-        std::map<int, Corners> markers;
-        for (unsigned i = 0; i < ids.size(); ++i) {
-            markers[ids[i]] = corners[i];
-        }
-
+        auto markers = detectMarkers(image, dictionary);
         if (markers.find(7) != std::end(markers)) {
             if (markers.find(5) != std::end(markers)) {
                 cv::line(image_copy, markers[7][1], markers[5][0], cv::Scalar(0, 0, 255), 5);
+
             }
             if (markers.find(4) != std::end(markers)) {
                 cv::line(image_copy, markers[7][1], markers[4][1], cv::Scalar(0, 0, 255), 5);
             }
         }
 
-        // If at least one marker detected
-        if (ids.size() > 0)
-            cv::aruco::drawDetectedMarkers(image_copy, corners, ids);
+        auto not_found = std::end(markers);
+        if (markers.find(2) != not_found && markers.find(4) != not_found && markers.find(5) != not_found) {
+            Corners image_points({ markers[2][0], markers[4][0], markers[5][0]});
+            auto transform = cv::getAffineTransform(reference_points, image_points);
+            std::vector<cv::Point2f> in;
+            in.push_back(cursor);
+            std::vector<cv::Point2f> out;
+            cv::transform(in, out, transform);
+            auto rect = cv::Rect(out[0], cv::Point2f(out[0].x + 10, out[0].y + 10));
+            cv::rectangle(image_copy, rect, cv::Scalar(0, 0, 255), 2);
+        }
+
+        drawMarkers(image_copy, markers);
 
         imshow("Detected markers", image_copy);
         char key = (char)cv::waitKey(wait_time);
@@ -124,3 +168,13 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+
+static void onMouse(int event, int x, int y, int, void* user)
+{
+    // TODO: make atomic
+    cv::Point2f& cursor = *reinterpret_cast<cv::Point2f*>(user);
+    cursor.x = static_cast<float>(x);
+    cursor.y = static_cast<float>(y);
+}
+
