@@ -19,3 +19,5 @@ add_subdirectory(detect_marker)
 add_subdirectory(pose_estimation)
 add_subdirectory(pose_estimation_board)
 add_subdirectory(draw_cube)
+
+add_subdirectory(sample_input)

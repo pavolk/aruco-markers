@@ -120,7 +120,7 @@ int main(int argc, char **argv)
         cv::aruco::getPredefinedDictionary( \
         cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
 
-    auto reference_image = cv::imread("master.jpg", cv::IMREAD_COLOR);
+    auto reference_image = cv::imread("reference.jpg", cv::IMREAD_COLOR);
     auto reference_markers = detectMarkers(reference_image, dictionary);
     drawMarkers(reference_image, reference_markers);
     imshow("Reference markers", reference_image);
