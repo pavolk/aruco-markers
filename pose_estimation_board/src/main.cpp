@@ -155,10 +155,10 @@ int main(int argc, char **argv)
 
 
     auto length = 0.04;
-    auto x_separation = 0.205;
-    auto y_separation = 0.385;
+    auto x_separation = 0.205 + length;
+    auto y_separation = 0.345 + length;
 
-#if 0
+#if 1
     auto objectPoints = createObjectPoints(3, 2, length, x_separation, y_separation);
     std::vector<int> boardIds({ 2, 3, 4, 5, 6, 7 });
     auto board = cv::aruco::Board::create(objectPoints, dictionary, boardIds);
