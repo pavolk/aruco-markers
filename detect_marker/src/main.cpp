@@ -39,9 +39,19 @@ const char* keys  =
         ;
 }
 
+cv::Point2f transformPoint(cv::Mat transform, cv::Point2f p)
+{
+    std::vector<cv::Point3f> input;
+    input.push_back(cv::Point3f(p.x, p.y, 1));
+    std::vector<cv::Point3f> output;
+    cv::transform(input, output, transform);
+    return cv::Point2f(output[0].x / output[0].z, output[0].y / output[0].z);
+}
+
 
 static cv::Point2f cursor;
 static void onMouse(int event, int x, int y, int, void*);
+
 
 typedef std::vector<cv::Point2f> Corners;
 typedef std::map<int, Corners> Markers;
@@ -59,6 +69,7 @@ static Markers detectMarkers(cv::InputArray image, const cv::Ptr<cv::aruco::Dict
     return retv;
 }
 
+
 static void drawMarkers(cv::InputOutputArray image, const Markers& markers)
 {
     if (markers.empty()) {
@@ -73,6 +84,14 @@ static void drawMarkers(cv::InputOutputArray image, const Markers& markers)
 
     cv::aruco::drawDetectedMarkers(image, corners, ids);
 }
+
+
+static void drawCursor(cv::InputOutputArray image, const cv::Point2f& position)
+{
+    auto rect = cv::Rect(position, cv::Point2f(position.x + 10, position.y + 10));
+    cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -126,7 +145,10 @@ int main(int argc, char **argv)
     imshow("Reference markers", reference_image);
     cv::setMouseCallback("Reference markers", onMouse, &cursor);
 
-    Corners reference_points({ reference_markers[2][0], reference_markers[4][0], reference_markers[5][0] });
+    std::array<int, 4> used_markers = { 2, 4, 7, 5 };
+
+    Corners reference_points;
+    std::transform(std::begin(used_markers), std::end(used_markers), std::back_inserter(reference_points), [&reference_markers](auto m) { return reference_markers[m][0]; });
 
     while (in_video.grab()) {
         cv::Mat image, image_copy;
@@ -134,26 +156,21 @@ int main(int argc, char **argv)
         image.copyTo(image_copy);
 
         auto markers = detectMarkers(image, dictionary);
-        if (markers.find(7) != std::end(markers)) {
-            if (markers.find(5) != std::end(markers)) {
+        
+        auto not_found = std::end(markers);
+        if (markers.find(7) != not_found) {
+            if (markers.find(5) != not_found) {
                 cv::line(image_copy, markers[7][1], markers[5][0], cv::Scalar(0, 0, 255), 5);
-
             }
-            if (markers.find(4) != std::end(markers)) {
+            if (markers.find(4) != not_found) {
                 cv::line(image_copy, markers[7][1], markers[4][1], cv::Scalar(0, 0, 255), 5);
             }
         }
-
-        auto not_found = std::end(markers);
-        if (markers.find(2) != not_found && markers.find(4) != not_found && markers.find(5) != not_found) {
-            Corners image_points({ markers[2][0], markers[4][0], markers[5][0]});
-            auto transform = cv::getAffineTransform(reference_points, image_points);
-            std::vector<cv::Point2f> in;
-            in.push_back(cursor);
-            std::vector<cv::Point2f> out;
-            cv::transform(in, out, transform);
-            auto rect = cv::Rect(out[0], cv::Point2f(out[0].x + 10, out[0].y + 10));
-            cv::rectangle(image_copy, rect, cv::Scalar(0, 0, 255), 2);
+        
+        if (std::all_of(std::begin(used_markers), std::end(used_markers), [&markers, &not_found](auto m) { return markers.find(m) != not_found; })) {
+            Corners image_points;
+            std::transform(std::begin(used_markers), std::end(used_markers), std::back_inserter(image_points), [&markers](auto m) { return markers[m][0]; });
+            drawCursor(image_copy, transformPoint(cv::getPerspectiveTransform(reference_points, image_points), cursor));
         }
 
         drawMarkers(image_copy, markers);
